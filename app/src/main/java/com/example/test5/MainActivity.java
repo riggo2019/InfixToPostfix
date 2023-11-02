@@ -48,8 +48,8 @@ class Stack {
 
 public class MainActivity extends AppCompatActivity {
     private EditText etInfix;
-    private Button btnSwap;
-    private TextView tvPostfix;
+    private Button btnSwap, btnCALC;
+    private TextView tvPostfix, tvResult;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +58,9 @@ public class MainActivity extends AppCompatActivity {
 
         etInfix = findViewById(R.id.et_infix);
         btnSwap = findViewById(R.id.btn_swap);
+        btnCALC = findViewById(R.id.btn_calc);
         tvPostfix = findViewById(R.id.tv_postfix);
+        tvResult = findViewById(R.id.tv_result);
 
         btnSwap.setOnClickListener((new View.OnClickListener() {
             @Override
@@ -66,8 +68,47 @@ public class MainActivity extends AppCompatActivity {
                 String infix = etInfix.getText().toString();
                 String postfix = InfixtoPostfix(infix);
                 tvPostfix.setText(postfix);
+
             }
         }));
+
+        btnCALC.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String infix = etInfix.getText().toString();
+                String postfix = InfixtoPostfix(infix);
+
+                int result = PostfixCalculator(postfix);
+                if(result == -1){
+                    tvResult.setText("Không tính được giá trị biểu thức !");
+                }else
+                    tvResult.setText("Kết quả: " + String.valueOf(result));
+
+            }
+        });
+    }
+
+    private int PostfixCalculator(String postfix) {
+        Stack stack = new Stack();
+
+        for (char c : postfix.toCharArray()) {
+            //Nếu là toán hạng
+            if (c >= '0' && c <= '9') {
+                stack.push(c - '0');
+            } //Nếu là toán tử
+            else if (c == '+' || c == '-' || c == '*' || c == '/') {
+                int operator1 = stack.pop();
+                int operator2 = stack.pop();
+
+                int result = calculate(operator1, operator2, c);
+
+                stack.push(result);
+            }
+        }
+        int r = stack.pop();
+
+
+        return r;
     }
 
     private String InfixtoPostfix(String infix) {
@@ -131,6 +172,21 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return postfix;
+    }
+
+    private int calculate(int operator1, int operator2, char operator) {
+        switch (operator) {
+            case '+':
+                return operator1 + operator2;
+            case '-':
+                return operator1 - operator2;
+            case '*':
+                return operator1 * operator2;
+            case '/':
+                return operator1 / operator2;
+            default:
+                throw new IllegalArgumentException("Invalid operator: " + operator);
+        }
     }
 
     private static int precedence(char c) {
